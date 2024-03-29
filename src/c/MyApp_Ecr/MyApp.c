@@ -1,5 +1,6 @@
 #include "Platform.h"
 #include <Utilities/int_to_string.h>
+#include <Utilities/int_to_string.h>
 
 #define LED_ADRESS 0x89000000
 
@@ -11,6 +12,7 @@ __attribute__((interrupt("machine")))
 void irq_handler(void) {
     // Appeler le gestionnaire d'interruptions du pilote de l'interface série.
     UART_irq_handler(uart);
+    UART_irq_handler(sonar_uart);
 
     // Incrémenter le compteur tick à chaque interruption du timer.
     if (Timer_has_events(timer)) {
@@ -95,9 +97,46 @@ void main(void) {
     
     tick = 0;
     unsigned tock = 0;
+    
+    uint8_t dist;
     // Exécuter jusqu'à ce que l'utilisateur presse une touche.
     while (!UART_has_data(uart)) {
-    uint8_t dist = 0;//Sonar_update(sonar);
+        dist = Sonar_update(sonar);
+        
+        //allumage des leds selon la distance
+        /*if (dist < 10){
+        	write32(LED_ADRESS, 0b0000000000000000);
+        }
+        
+        if (dist > 10 || dist < 20){
+        	write32(LED_ADRESS, 0b1000000000000011);
+        }
+        
+         if (dist > 20 || dist < 30){
+        	write32(LED_ADRESS, 0b1100000000000111);
+        }
+        
+         if (dist > 30 || dist < 40){
+        	write32(LED_ADRESS, 0b1110000000001111);
+        }
+        
+         if (dist > 40 || dist < 50){
+        	write32(LED_ADRESS, 0b1111000000011111);
+        }
+        
+         if (dist > 50 || dist < 60){
+        	write32(LED_ADRESS, 0b1111100000111111);
+        }
+        
+        if (dist > 60 || dist < 70){
+        	write32(LED_ADRESS, 0b1111110001111111);
+        }
+        
+        if (dist > 70 || dist < 80){
+        	write32(LED_ADRESS, 0b1111111011111111);
+        }*/
+        write32(LED_ADRESS, 0b1111111011111111);
+	write32(LED_ADRESS, (uint32_t)dist);
         if (tick != tock) {
             Joystick_update(jstk, &jstk_state);
             Accelerometer_update(acl, &acl_state);
